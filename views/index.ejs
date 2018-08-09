@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf=8">
+		<meta name="viewport" content="width=device-width. initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+		<style>
+			html, body {height: 100%;}
+			.sidebar{background-color:#f1f1f1;}
+			.chat-header{background-color:#f1f1f1; width:100%; padding :1%;}
+			.mesage-bar{position: absolute; bottom:0;}
+			.mesage-bar input{float:left; }
+			.fullheight{height:100%;}
+			.chat-section{ padding:0; margin :0;}
+		</style>
+	</head>
+	<body>
+		<div class="container-fluid fullheight">
+			<div class="row fullheight">
+			  	<div class="col-sm-3 sidebar">
+			  		<div>
+			  			<p>Manohar Malkar</p>
+			  		</div>
+			  		<div>
+			  			<ul>
+			  				<% for(var i=0; i < userdata.friend_list.length; i++) { %>
+			  				<li data-user="<%= userdata.friend_list[i] %>" class="user_list">
+			  					<%= userdata.friend_list[i] %>
+			  				</li>
+			  				<% } %>
+			  			</ul>
+			  		</div>
+			  	</div>
+			  	<div class="col-sm-9 fullheight chat-section">
+			  		<div class='chat-header'>
+			  			<div>
+				  			<p id="user"></p>
+				  			<input id="name" value="" type="hidden">
+				  		</div>
+			  		</div>
+			  		<div>
+			  			<ul id="messages"></ul>
+			  		</div>
+			  		<div class="form-group mesage-bar col-sm-11">
+			  			<input type="text" class="form-control col-sm-10" id="message">
+			  			<button type="button" class="btn btn-primary col-sm-2" id="send">Send</button>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		<script src="/socket.io/socket.io.js"></script>
+	    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	    <script>
+	    $(function(){
+			//var socket = io();
+			//$(window).load(function() {
+				var socket = io('http://localhost:3000/?user=' + $('#name').val());
+				socket.emit('join', {user: "<%= userdata.user_id %>"});
+
+				$('#send').click(function(){
+					var data = {
+						"message":$('#message').val(),
+						"user": "<%= userdata.user_id %>",
+						"to": $('#name').val()
+					};
+					socket.emit('chat message',data);
+					$('#message').val('');
+					return false;
+				});
+
+				$('.user_list').click(function(){
+					$('#user').html($(this).data("user"));
+					$('#name').val($(this).data("user"));
+					//return false;
+				});
+
+				socket.on('chat message', function(msg){
+					var html = "<li><b>" + msg.user + " : </b>" + msg.message
+					$('#messages').append(html);
+					if($('#name').val() == ''){
+						$('#user').html(msg.user);
+						$('#name').val(msg.user);
+					}
+				});
+			//});
+
+			
+	    });
+	    </script>
+	</body>
+</html>
