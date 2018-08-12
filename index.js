@@ -20,19 +20,12 @@ io.use(function(socket, next) {
 app.get('/user/:userid', function(req,res){
 	var collection = db.get('users');
   	collection.findOne({user_id:req.params.userid},function(e,docs){
-    	//console.log(docs);
-    	//console.log("here");
     	res.render("index", {
 			userdata: docs,
 		});
   	});
 	
 });
-
-/*app.get('/', function(req,res){
-	res.render("index", {username: 'user'+Date.now()});
-});*/
-
 
 io.on('connection', function(socket){
 	var collection = db.get('users');
@@ -48,6 +41,8 @@ io.on('connection', function(socket){
 	socket.on('chat message', function(data){
 		console.log(data);
 		var db = socket.db;
+		data.timestamp = Date.now();
+		db.get('messages').insert([data]);
 	  	io.to(data.to).to(data.user).emit('chat message',data);
 	})
 	

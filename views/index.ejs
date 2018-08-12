@@ -26,6 +26,7 @@
 			  				<% for(var i=0; i < userdata.friend_list.length; i++) { %>
 			  				<li data-user="<%= userdata.friend_list[i] %>" class="user_list">
 			  					<%= userdata.friend_list[i] %>
+			  					<span></span>
 			  				</li>
 			  				<% } %>
 			  			</ul>
@@ -50,7 +51,7 @@
 			
 		</div>
 		<script src="/socket.io/socket.io.js"></script>
-	    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 	    <script>
 	    $(function(){
 			//var socket = io();
@@ -59,13 +60,18 @@
 				socket.emit('join', {user: "<%= userdata.user_id %>"});
 
 				$('#send').click(function(){
-					var data = {
-						"message":$('#message').val(),
-						"user": "<%= userdata.user_id %>",
-						"to": $('#name').val()
-					};
-					socket.emit('chat message',data);
-					$('#message').val('');
+					if($('#name').val() == ''){
+						alert('please select user');
+					} else {
+						var data = {
+							"message":$('#message').val(),
+							"user": "<%= userdata.user_id %>",
+							"to": $('#name').val()
+						};
+						socket.emit('chat message',data);
+						$('#message').val('');
+							
+					}
 					return false;
 				});
 
@@ -76,11 +82,22 @@
 				});
 
 				socket.on('chat message', function(msg){
-					var html = "<li><b>" + msg.user + " : </b>" + msg.message
-					$('#messages').append(html);
+					if(msg.user == "<%= userdata.user_id %>" || $('#name').val() == msg.user){
+						var html = "<li><b>" + msg.user + " : </b>" + msg.message
+						$('#messages').append(html);
+					}
+					
 					if($('#name').val() == ''){
 						$('#user').html(msg.user);
 						$('#name').val(msg.user);
+					} else if ($('#name').val() != msg.user){
+						var chatcount = $('.user_list[data-user="'+msg.user+'"]').find('span').html();
+						console.log(chatcount);
+						console.log('khay re');
+						if(chatcount == '')
+							$('.user_list[data-user="'+msg.user+'"]').find('span').html(1);
+						else
+							$('.user_list[data-user="'+msg.user+'"]').find('span').html(parseInt(chatcount)+1);
 					}
 				});
 			//});
