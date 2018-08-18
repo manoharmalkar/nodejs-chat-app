@@ -54,56 +54,94 @@
 	    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 	    <script>
 	    $(function(){
-			//var socket = io();
-			//$(window).load(function() {
-				var socket = io('http://localhost:3000/?user=' + $('#name').val());
-				socket.emit('join', {user: "<%= userdata.user_id %>"});
+			
+			var socket = io('http://localhost:3000/?user=' + $('#name').val());
+			socket.emit('join', {user: "<%= userdata.user_id %>"});
 
-				$('#send').click(function(){
-					if($('#name').val() == ''){
-						alert('please select user');
-					} else {
-						var data = {
-							"message":$('#message').val(),
-							"user": "<%= userdata.user_id %>",
-							"to": $('#name').val()
-						};
-						socket.emit('chat message',data);
-						$('#message').val('');
-							
-					}
-					return false;
-				});
+			$('#send').click(function(){
+				if($('#name').val() == ''){
+					alert('please select user');
+				} else {
+					var data = {
+						"message":$('#message').val(),
+						"user": "<%= userdata.user_id %>",
+						"to": $('#name').val()
+					};
+					socket.emit('chat message',data);
+					$('#message').val('');
+						
+				}
+				return false;
+			});
 
-				$('.user_list').click(function(){
-					$('#user').html($(this).data("user"));
-					$('#name').val($(this).data("user"));
-					//return false;
-				});
-
-				socket.on('chat message', function(msg){
-					if(msg.user == "<%= userdata.user_id %>" || $('#name').val() == msg.user){
+			$('.user_list').click(function(){
+				
+				var data = {};
+				
+				$('#user').html($(this).data("user"));
+				$('#name').val($(this).data("user"));
+				
+				getUserMessages($(this).data("user"), "<%= userdata.user_id %>");
+				
+				/*$.post( "/getChatMessages", {user1:$(this).data("user"),user2: "<%= userdata.user_id %>"}, function( data ) {
+				
+					$('#messages').html("");
+				
+					data.forEach(function(msg){
+				
 						var html = "<li><b>" + msg.user + " : </b>" + msg.message
 						$('#messages').append(html);
-					}
-					
-					if($('#name').val() == ''){
-						$('#user').html(msg.user);
-						$('#name').val(msg.user);
-					} else if ($('#name').val() != msg.user){
-						var chatcount = $('.user_list[data-user="'+msg.user+'"]').find('span').html();
-						console.log(chatcount);
-						console.log('khay re');
-						if(chatcount == '')
-							$('.user_list[data-user="'+msg.user+'"]').find('span').html(1);
-						else
-							$('.user_list[data-user="'+msg.user+'"]').find('span').html(parseInt(chatcount)+1);
-					}
-				});
-			//});
+				
+					});
+				
+				});*/
 
-			
+			});
+
+			socket.on('chat message', function(msg){
+				
+				if($('#name').val() == ''){
+					
+					$('#user').html(msg.user);
+					$('#name').val(msg.user);
+					getUserMessages(msg.user, "<%= userdata.user_id %>");
+					
+				} else if ($('#name').val() != msg.user){
+				
+					var chatcount = $('.user_list[data-user="'+msg.user+'"]').find('span').html();
+					
+					if(chatcount == '')
+						$('.user_list[data-user="'+msg.user+'"]').find('span').html(1);
+					else
+						$('.user_list[data-user="'+msg.user+'"]').find('span').html(parseInt(chatcount)+1);
+				
+				}
+				
+				if(msg.user == "<%= userdata.user_id %>" || $('#name').val() == msg.user){
+					
+					var html = "<li><b>" + msg.user + " : </b>" + msg.message
+					$('#messages').append(html);
+				
+				}
+				
+			});
+
 	    });
+		function getUserMessages(user1, user2){
+			$.post( "/getChatMessages", {user1:user1,user2: user2}, function( data ) {
+				
+				$('#messages').html("");
+			
+				data.forEach(function(msg){
+			
+					var html = "<li><b>" + msg.user + " : </b>" + msg.message
+					$('#messages').append(html);
+			
+				});
+			
+			});
+
+		}
 	    </script>
 	</body>
 </html>
